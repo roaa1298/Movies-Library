@@ -4,12 +4,15 @@ require('dotenv').config();
 const express=require('express');
 const cors=require('cors');
 const axios=require('axios');
+const pg=require('pg');
 const moviesData=require('./Movie_Data/data.json');
 
 const PORT=process.env.PORT;
+const client= new pg.Client(process.env.DATABASE_URL);
 
 const server=express();
 server.use(cors());
+server.use(express.json());
 
 
 server.get('/',handleHomePage);
@@ -18,6 +21,8 @@ server.get('/trending',handletrending);
 server.get('/search',handleSearch);
 server.get('/new',searchNew);
 server.get('/Rings',searchRings);
+server.post('/addMovie',addMovieHandler);
+server.get('/getMovies',getMovieHandler);
 server.use('*',handleNotFound);
 server.use(errorHandler);
 let url=`https://api.themoviedb.org/3/trending/all/week?api_key=${process.env.APIKEY}&language=en-US`;
@@ -82,6 +87,25 @@ function searchRings(req,res){
     });
 }
 
+function addMovieHandler(req,res){
+    const movieObj=req.body;
+    let sql=`INSERT INTO myMovie(title,overview,release_date,poster_path,video,vote_count) VALUES ($1,$2,$3,$4,$5,$6) RETURNING *;`
+    let value=[movieObj.title,movieObj.overview,movieObj.release_date,movieObj.poster_path,movieObj.video,movieObj.vote_count];
+    client.query(sql,value).then(data =>{
+        res.status(200).json(data);
+    }).catch(error =>{
+        errorHandler(error,req,res);
+    });
+}
+function getMovieHandler(req,res){
+    let sql2=`SELECT * FROM myMovie;`;
+    client.query(sql2).then(data =>{
+            res.status(200).json(data.rows);
+    }).catch(error=>{
+        errorHandler(error,req,res);
+    });
+}
+
 function errorHandler(error,req,res){
     const err={
         status : 500 ,
@@ -94,8 +118,10 @@ function handleNotFound(req,res){
     res.status(404).send("this page does not exist!");
 }
 
-
-server.listen(PORT,()=>{
+client.connect().then(()=>{
+    server.listen(PORT,()=>{
     console.log("listening to port 3000");
 });
+});
+
 
