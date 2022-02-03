@@ -7,5 +7,6 @@ CREATE TABLE IF NOT EXISTS myMovie (
     release_date VARCHAR(255),
     poster_path VARCHAR(255),
     video BOOLEAN,
-    vote_count INTEGER
+    vote_count INTEGER,
+    comments VARCHAR(255)
 );

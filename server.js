@@ -6,6 +6,7 @@ const cors=require('cors');
 const axios=require('axios');
 const pg=require('pg');
 const moviesData=require('./Movie_Data/data.json');
+const res = require('express/lib/response');
 
 const PORT=process.env.PORT;
 const client= new pg.Client(process.env.DATABASE_URL);
@@ -23,6 +24,9 @@ server.get('/new',searchNew);
 server.get('/Rings',searchRings);
 server.post('/addMovie',addMovieHandler);
 server.get('/getMovies',getMovieHandler);
+server.put('/UPDATE/:id',updateHandler);
+server.get('/getMovie/:id',handleGetMovie);
+server.delete('/DELETE/:id',deleteHandler);
 server.use('*',handleNotFound);
 server.use(errorHandler);
 let url=`https://api.themoviedb.org/3/trending/all/week?api_key=${process.env.APIKEY}&language=en-US`;
@@ -103,6 +107,40 @@ function getMovieHandler(req,res){
             res.status(200).json(data.rows);
     }).catch(error=>{
         errorHandler(error,req,res);
+    });
+}
+
+function updateHandler(req,res){
+    const id=req.params.id;
+    const ob=req.body;
+    const sql=`UPDATE myMovie SET comments=$1 WHERE id=$2 RETURNING *;`;
+    let values=["my favarate movie :)",id];
+    //or we can pass the comment from req.body
+    //ob.comments 
+    client.query(sql,values).then(data=>{
+        res.status(200).json(data.rows);
+    }).catch(err=>{
+        errorHandler(err,req,res);
+    });
+}
+
+function deleteHandler(req,res){
+    const id=req.params.id;
+    const sql = `DELETE FROM myMovie WHERE id=${id};`
+    client.query(sql).then(()=>{
+        res.status(200).send("the movie has been deleted");
+    }).catch(err=>{
+        errorHandler(err,req,res);
+    });
+}
+
+function handleGetMovie(req,res){
+    const id=req.params.id;
+    let sql = `SELECT * FROM myMovie WHERE id=${id};`;
+    client.query(sql).then(data=>{
+        res.status(200).json(data.rows);
+    }).catch(err=>{
+        errorHandler(err,req,res);
     });
 }
 
