@@ -9,7 +9,9 @@ const moviesData=require('./Movie_Data/data.json');
 const res = require('express/lib/response');
 
 const PORT=process.env.PORT;
-const client= new pg.Client(process.env.DATABASE_URL);
+const client = new pg.Client({
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false }});
 
 const server=express();
 server.use(cors());
