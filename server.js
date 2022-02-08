@@ -116,7 +116,7 @@ function updateHandler(req,res){
     const id=req.params.id;
     const ob=req.body;
     const sql=`UPDATE myMovie SET comments=$1 WHERE id=$2 RETURNING *;`;
-    let values=["my favarate movie :)",id];
+    let values=[ob.comments,id];
     //or we can pass the comment from req.body
     //ob.comments 
     client.query(sql,values).then(data=>{
