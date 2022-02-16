@@ -56,9 +56,12 @@ res.status(200).json(movie);
 }
 
 function handletrending(req,res){
+    let newArr=[];
     axios.get(url).then((data)=>{
-        let spiderman=new Movie(data.data.results[0].id,data.data.results[0].title,data.data.results[0].poster_path,data.data.results[0].overview,data.data.results[0].release_date);
-        res.status(200).json(spiderman);
+        data.data.results.forEach(mov=>{
+            newArr.push(new Movie(mov.id,mov.title,mov.poster_path,mov.overview,mov.release_date));
+        })
+        res.status(200).json(newArr);
     }).catch((err)=>{
         errorHandler(err,req,res);
     });
